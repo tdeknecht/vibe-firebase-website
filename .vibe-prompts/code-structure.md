@@ -1,435 +1,465 @@
-# Code Structure & Maintainability Prompt for Firebase Applications
+# Code Structure & Maintainability Principles
 
-## Modern Next.js 15 Architecture Patterns
+## Universal Architecture Patterns for Scalable Applications
 
-When structuring code in this Firebase application, follow these well-architected patterns for maintainability and scalability. **For free tier optimization**, see `finops-free-tier-maximization.md` for development stack choices that maximize free services.
+When structuring code in any application, follow these well-architected patterns for maintainability and scalability. These principles apply across languages, frameworks, and platforms.
 
-> 🆓 **Free-Tier Stack**: Next.js 15 + Firebase Hosting + Firebase Spark + GitHub (public repos) = $0/month development cost.
+## Core Organizational Principles
 
-### Project Structure
+### 1. Separation of Concerns
+Organize code by responsibility, not by file type:
+
 ```
-src/
-├── app/                          # Next.js 15 App Router
-│   ├── (auth)/                   # Route groups
-│   │   ├── login/
-│   │   └── register/
-│   ├── dashboard/
-│   │   ├── page.tsx
-│   │   ├── loading.tsx
-│   │   └── error.tsx
-│   ├── api/                      # API routes
-│   │   ├── auth/
-│   │   └── users/
-│   ├── globals.css
-│   ├── layout.tsx                # Root layout
-│   └── page.tsx                  # Home page
-├── components/                   # Reusable UI components
-│   ├── ui/                       # Base UI components (shadcn/ui)
-│   │   ├── button.tsx
-│   │   ├── input.tsx
-│   │   └── index.ts
-│   ├── auth/                     # Authentication components
-│   │   ├── login-form.tsx
-│   │   └── auth-provider.tsx
-│   ├── dashboard/                # Dashboard-specific components
-│   └── layout/                   # Layout components
-│       ├── header.tsx
-│       └── sidebar.tsx
-├── lib/                          # Core utilities and configurations
-│   ├── firebase/                 # Firebase configuration
-│   │   ├── config.ts
-│   │   ├── auth.ts
-│   │   ├── firestore.ts
-│   │   └── storage.ts
-│   ├── utils/                    # Utility functions
-│   │   ├── cn.ts                 # Class name utility
-│   │   ├── validators.ts         # Zod schemas
-│   │   └── formatters.ts
-│   ├── hooks/                    # Custom React hooks
-│   │   ├── use-auth.ts
-│   │   ├── use-firestore.ts
-│   │   └── use-storage.ts
-│   └── types/                    # TypeScript definitions
-│       ├── auth.ts
-│       ├── user.ts
-│       └── database.ts
-├── styles/                       # Additional styles
-└── middleware.ts                 # Next.js middleware
+/src
+├── core/                     # Core application functionality
+│   ├── config/              # Configuration management
+│   ├── services/            # Business logic services
+│   └── utilities/           # Shared utilities
+├── features/                # Feature-based modules
+│   ├── authentication/      # Auth-related code
+│   ├── user-management/     # User operations
+│   └── dashboard/           # Dashboard functionality
+├── shared/                  # Reusable components
+│   ├── components/          # UI components
+│   ├── utils/              # Helper functions
+│   └── types/              # Data definitions
+└── infrastructure/          # External concerns
+    ├── api/                # API layer
+    ├── database/           # Data access
+    └── storage/            # File handling
 ```
 
-### Component Architecture Principles
+### 2. Dependency Direction
+- High-level modules should not depend on low-level modules
+- Both should depend on abstractions
+- Abstractions should not depend on details
 
-#### 1. Component Composition over Inheritance
-```typescript
-// ✅ Good: Composable components
-interface CardProps {
-  children: React.ReactNode;
-  className?: string;
+```
+Application Layer → Domain Layer → Infrastructure Layer
+     ↑                  ↑              ↑
+Dependencies flow inward, not outward
+```
+
+### 3. Single Responsibility Principle
+Each module, class, or function should have one reason to change:
+
+**✅ Good:**
+```
+AuthenticationService - handles only auth operations
+UserProfileService - handles only profile operations
+NotificationService - handles only notifications
+```
+
+**❌ Avoid:**
+```
+UserService - handles auth, profile, notifications, settings...
+```
+
+## Module Design Patterns
+
+### 1. Service Layer Pattern
+Encapsulate business logic in service modules:
+
+```
+// Authentication Service Interface
+interface AuthenticationService {
+    signIn(credentials: Credentials): Result<User>
+    signOut(): Result<void>
+    getCurrentUser(): User | null
+    onAuthStateChange(callback: Function): UnsubscribeFunction
 }
 
-export function Card({ children, className }: CardProps) {
-  return (
-    <div className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)}>
-      {children}
-    </div>
-  );
+// Implementation can use any technology
+class FirebaseAuthService implements AuthenticationService {
+    // Firebase-specific implementation
 }
 
-export function CardHeader({ children, className }: CardProps) {
-  return (
-    <div className={cn("flex flex-col space-y-1.5 p-6", className)}>
-      {children}
-    </div>
-  );
+class LocalAuthService implements AuthenticationService {
+    // Local storage implementation
+}
+```
+
+### 2. Repository Pattern
+Abstract data access behind interfaces:
+
+```
+interface UserRepository {
+    findById(id: string): Promise<User | null>
+    save(user: User): Promise<void>
+    delete(id: string): Promise<void>
+    findByEmail(email: string): Promise<User | null>
+}
+
+// Can be implemented with any database
+class FirestoreUserRepository implements UserRepository {}
+class PostgreSQLUserRepository implements UserRepository {}
+class InMemoryUserRepository implements UserRepository {} // For testing
+```
+
+### 3. Factory Pattern
+Create objects without specifying exact classes:
+
+```
+interface ServiceFactory {
+    createAuthService(): AuthenticationService
+    createUserRepository(): UserRepository
+    createNotificationService(): NotificationService
+}
+
+class DevelopmentServiceFactory implements ServiceFactory {
+    createAuthService() {
+        return new MockAuthService()
+    }
+}
+
+class ProductionServiceFactory implements ServiceFactory {
+    createAuthService() {
+        return new FirebaseAuthService(config)
+    }
+}
+```
+
+## Error Handling Architecture
+
+### 1. Result Pattern
+Return structured results instead of throwing exceptions:
+
+```
+type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E }
+
+// Usage
+async function authenticateUser(credentials): Promise<Result<User>> {
+    try {
+        const user = await authService.signIn(credentials)
+        return { success: true, data: user }
+    } catch (error) {
+        return { success: false, error }
+    }
+}
+```
+
+### 2. Error Boundary Pattern
+Contain errors at appropriate levels:
+
+```
+// High-level error handling
+class ApplicationErrorHandler {
+    handleAuthenticationError(error: AuthError): void {}
+    handleValidationError(error: ValidationError): void {}
+    handleNetworkError(error: NetworkError): void {}
+}
+
+// Module-level error handling
+class AuthenticationModule {
+    private errorHandler: ErrorHandler
+
+    async signIn(credentials) {
+        try {
+            // Operation
+        } catch (error) {
+            this.errorHandler.handle(error)
+            throw new AuthenticationError(error.message)
+        }
+    }
+}
+```
+
+## Configuration Management
+
+### 1. Environment-Based Configuration
+Separate configuration from code:
+
+```
+interface AppConfig {
+    api: {
+        baseUrl: string
+        timeout: number
+    }
+    database: {
+        host: string
+        port: number
+    }
+    features: {
+        enableAnalytics: boolean
+        enableNotifications: boolean
+    }
+}
+
+// Load from environment variables, files, or external services
+class ConfigurationManager {
+    load(): AppConfig {}
+    get<T>(key: string): T {}
+    watch(key: string, callback: Function): void {}
+}
+```
+
+### 2. Feature Toggle Pattern
+Control feature availability through configuration:
+
+```
+interface FeatureManager {
+    isEnabled(feature: string): boolean
+    enable(feature: string): void
+    disable(feature: string): void
 }
 
 // Usage
-<Card>
-  <CardHeader>
-    <h2>User Profile</h2>
-  </CardHeader>
-  <CardContent>...</CardContent>
-</Card>
-```
-
-#### 2. Server and Client Component Separation
-```typescript
-// ✅ Server Component (default in app directory)
-import { getUserProfile } from '@/lib/firebase/firestore';
-
-export default async function ProfilePage({ params }: { params: { id: string } }) {
-  const user = await getUserProfile(params.id);
-
-  return (
-    <div>
-      <UserProfileHeader user={user} />
-      <UserProfileClient userId={params.id} />
-    </div>
-  );
-}
-
-// ✅ Client Component (when needed)
-'use client';
-
-import { useAuth } from '@/lib/hooks/use-auth';
-
-export function UserProfileClient({ userId }: { userId: string }) {
-  const { user } = useAuth();
-  // Client-side interactivity
+if (featureManager.isEnabled('new-dashboard')) {
+    renderNewDashboard()
+} else {
+    renderLegacyDashboard()
 }
 ```
 
-#### 3. TypeScript-First Development
-```typescript
-// Define strict types for all data structures
-export interface User {
-  readonly id: string;
-  email: string;
-  displayName: string | null;
-  photoURL: string | null;
-  role: UserRole;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-}
+## Testing Architecture
 
-export type UserRole = 'admin' | 'user' | 'moderator';
-
-// Use branded types for IDs
-export type UserId = string & { readonly brand: unique symbol };
-export type PostId = string & { readonly brand: unique symbol };
-
-// Zod schemas for runtime validation
-export const CreateUserSchema = z.object({
-  email: z.string().email(),
-  displayName: z.string().min(1).max(50),
-  role: z.enum(['admin', 'user', 'moderator']).default('user'),
-});
-
-export type CreateUserInput = z.infer<typeof CreateUserSchema>;
+### 1. Test Pyramid Structure
+```
+E2E Tests (Few)
+├── Integration Tests (Some)
+└── Unit Tests (Many)
 ```
 
-### State Management Patterns
+### 2. Dependency Injection for Testing
+Make components testable by injecting dependencies:
 
-#### 1. React Server Components + useState for Local State
-```typescript
-// ✅ Server-side data fetching
-export default async function PostsPage() {
-  const posts = await getPosts();
-
-  return (
-    <div>
-      <PostsList initialPosts={posts} />
-    </div>
-  );
+```
+class UserService {
+    constructor(
+        private userRepository: UserRepository,
+        private emailService: EmailService,
+        private logger: Logger
+    ) {}
 }
 
-// ✅ Client-side state management
-'use client';
+// In tests
+const mockUserRepo = new MockUserRepository()
+const mockEmailService = new MockEmailService()
+const mockLogger = new MockLogger()
 
-export function PostsList({ initialPosts }: { initialPosts: Post[] }) {
-  const [posts, setPosts] = useState(initialPosts);
-  const [filter, setFilter] = useState('');
-
-  // Local state management for UI
-}
+const userService = new UserService(mockUserRepo, mockEmailService, mockLogger)
 ```
 
-#### 2. Custom Hooks for Firebase Integration
-```typescript
-// ✅ Reusable Firebase hooks
-export function useFirestoreDocument<T>(
-  path: string,
-  converter?: FirestoreDataConverter<T>
-) {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+### 3. Test Organization
+Mirror your source structure in tests:
 
-  useEffect(() => {
-    const docRef = doc(db, path);
-    const unsubscribe = onSnapshot(
-      converter ? docRef.withConverter(converter) : docRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          setData(snapshot.data() as T);
-        } else {
-          setData(null);
-        }
-        setLoading(false);
-      },
-      (err) => {
-        setError(err);
-        setLoading(false);
-      }
-    );
+```
+/tests
+├── unit/
+│   ├── services/
+│   ├── components/
+│   └── utils/
+├── integration/
+│   ├── api/
+│   └── database/
+└── e2e/
+    ├── user-flows/
+    └── critical-paths/
+```
 
-    return unsubscribe;
-  }, [path, converter]);
+## Performance Patterns
 
-  return { data, loading, error };
+### 1. Lazy Loading
+Load modules only when needed:
+
+```
+// Dynamic imports
+async function loadDashboard() {
+    const { DashboardModule } = await import('./dashboard/dashboard-module')
+    return new DashboardModule()
+}
+
+// Conditional loading
+if (user.hasPermission('admin')) {
+    const adminModule = await loadAdminModule()
 }
 ```
 
-### Error Handling & Loading States
+### 2. Caching Strategy
+Implement caching at appropriate layers:
 
-#### 1. Error Boundaries
-```typescript
-'use client';
-
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
-  fallback?: React.ComponentType<{ error: Error; reset: () => void }>;
+```
+interface CacheManager {
+    get<T>(key: string): T | null
+    set<T>(key: string, value: T, ttl?: number): void
+    invalidate(key: string): void
+    clear(): void
 }
 
-export function ErrorBoundary({ children, fallback: Fallback }: ErrorBoundaryProps) {
-  return (
-    <ErrorBoundaryComponent
-      fallback={Fallback || DefaultErrorFallback}
-    >
-      {children}
-    </ErrorBoundaryComponent>
-  );
-}
+class UserService {
+    constructor(
+        private userRepo: UserRepository,
+        private cache: CacheManager
+    ) {}
 
-function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
-  return (
-    <div className="flex flex-col items-center justify-center p-6">
-      <h2>Something went wrong</h2>
-      <button onClick={reset}>Try again</button>
-    </div>
-  );
+    async getUser(id: string): Promise<User> {
+        const cached = this.cache.get(`user:${id}`)
+        if (cached) return cached
+
+        const user = await this.userRepo.findById(id)
+        this.cache.set(`user:${id}`, user, 300) // 5 minutes
+        return user
+    }
 }
 ```
 
-#### 2. Loading and Suspense Patterns
-```typescript
-// ✅ Using Next.js loading.tsx
-export default function Loading() {
-  return (
-    <div className="flex items-center justify-center p-6">
-      <Spinner />
-    </div>
-  );
-}
+## Code Quality Guidelines
 
-// ✅ Suspense boundaries for data fetching
-export default function PostsLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div>
-      <Suspense fallback={<PostsLoading />}>
-        {children}
-      </Suspense>
-    </div>
-  );
-}
+### 1. Naming Conventions
+- **Modules/Classes**: PascalCase (`UserService`, `AuthenticationModule`)
+- **Functions/Methods**: camelCase (`getUserById`, `validateCredentials`)
+- **Constants**: SCREAMING_SNAKE_CASE (`MAX_RETRY_ATTEMPTS`, `DEFAULT_TIMEOUT`)
+- **Files**: kebab-case (`user-service.js`, `auth-module.py`)
+
+### 2. Function Design
 ```
-
-### Code Quality Guidelines
-
-#### 1. File and Function Naming
-- Use kebab-case for files: `user-profile.tsx`, `auth-provider.tsx`
-- Use PascalCase for components: `UserProfile`, `AuthProvider`
-- Use camelCase for functions and variables: `getUserProfile`, `currentUser`
-- Use SCREAMING_SNAKE_CASE for constants: `MAX_UPLOAD_SIZE`
-
-#### 2. Function Design Principles
-```typescript
 // ✅ Pure functions when possible
-export function formatDate(date: Date, locale = 'en-US'): string {
-  return new Intl.DateTimeFormat(locale).format(date);
+function calculateTax(amount: number, rate: number): number {
+    return amount * rate
 }
 
-// ✅ Single responsibility principle
-export async function createUser(userData: CreateUserInput): Promise<User> {
-  const validatedData = CreateUserSchema.parse(userData);
-  const userRef = doc(collection(db, 'users'));
-
-  const user: User = {
-    id: userRef.id,
-    ...validatedData,
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  };
-
-  await setDoc(userRef, user);
-  return user;
+// ✅ Single responsibility
+function validateEmail(email: string): boolean {
+    // Only validates email format
 }
 
-// ✅ Error handling with Result pattern
-export type Result<T, E = Error> =
-  | { success: true; data: T }
-  | { success: false; error: E };
+function sendEmail(to: string, subject: string, body: string): Promise<void> {
+    // Only sends emails
+}
 
-export async function safeCreateUser(userData: CreateUserInput): Promise<Result<User>> {
-  try {
-    const user = await createUser(userData);
-    return { success: true, data: user };
-  } catch (error) {
-    return { success: false, error: error as Error };
-  }
+// ✅ Consistent error handling
+async function processPayment(amount: number): Promise<Result<Payment>> {
+    // Returns structured result
 }
 ```
 
-#### 3. Import Organization
-```typescript
-// ✅ Organized imports
-// 1. React and Next.js
-import React from 'react';
-import { redirect } from 'next/navigation';
-
-// 2. Third-party libraries
-import { z } from 'zod';
-import { clsx } from 'clsx';
-
-// 3. Internal utilities and configs
-import { db } from '@/lib/firebase/config';
-import { cn } from '@/lib/utils/cn';
-
-// 4. Internal components and hooks
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/lib/hooks/use-auth';
-
-// 5. Type imports last
-import type { User } from '@/lib/types/user';
+### 3. Documentation Standards
+```
+/**
+ * Authenticates a user with provided credentials
+ *
+ * @param credentials - User login credentials
+ * @returns Promise resolving to authentication result
+ * @throws AuthenticationError when credentials are invalid
+ */
+async function authenticateUser(credentials: Credentials): Promise<Result<User>>
 ```
 
-### Performance Optimization Patterns
+## Deployment and Operations
 
-#### 1. Code Splitting and Dynamic Imports
-```typescript
-// ✅ Dynamic imports for large components
-const AdminPanel = dynamic(() => import('@/components/admin/admin-panel'), {
-  loading: () => <AdminPanelSkeleton />,
-  ssr: false,
-});
+### 1. Environment Parity
+Keep development, staging, and production as similar as possible:
 
-// ✅ Conditional loading based on user role
-export function Dashboard() {
-  const { user } = useAuth();
-
-  return (
-    <div>
-      {user?.role === 'admin' && <AdminPanel />}
-    </div>
-  );
+```
+// Same configuration structure across environments
+const config = {
+    development: { /* dev settings */ },
+    staging: { /* staging settings */ },
+    production: { /* prod settings */ }
 }
 ```
 
-#### 2. Memoization Patterns
-```typescript
-// ✅ Memo for expensive components
-export const UserList = memo(function UserList({ users }: { users: User[] }) {
-  return (
-    <div>
-      {users.map(user => (
-        <UserCard key={user.id} user={user} />
-      ))}
-    </div>
-  );
-});
+### 2. Health Checks
+Implement standardized health monitoring:
 
-// ✅ useMemo for expensive calculations
-export function UserStats({ users }: { users: User[] }) {
-  const stats = useMemo(() => {
-    return {
-      total: users.length,
-      active: users.filter(u => u.lastLoginAt > Date.now() - 30 * 24 * 60 * 60 * 1000).length,
-      byRole: users.reduce((acc, user) => {
-        acc[user.role] = (acc[user.role] || 0) + 1;
-        return acc;
-      }, {} as Record<UserRole, number>),
-    };
-  }, [users]);
+```
+interface HealthCheck {
+    name: string
+    check(): Promise<HealthStatus>
+}
 
-  return <StatsDisplay stats={stats} />;
+class DatabaseHealthCheck implements HealthCheck {
+    name = 'database'
+
+    async check(): Promise<HealthStatus> {
+        try {
+            await this.database.ping()
+            return { status: 'healthy', timestamp: new Date() }
+        } catch (error) {
+            return { status: 'unhealthy', error: error.message, timestamp: new Date() }
+        }
+    }
 }
 ```
 
-## Code Quality Checklist
+## Security Patterns
 
-### Before Commit
-- [ ] All TypeScript errors resolved
-- [ ] Components properly typed with interfaces
-- [ ] Error boundaries implemented for risky operations
-- [ ] Loading states handled appropriately
-- [ ] Input validation implemented (both client and server)
-- [ ] No console.log statements in production code
-- [ ] Imports organized and unused imports removed
-- [ ] Component and function names follow naming conventions
+### 1. Input Validation
+Validate all inputs at boundaries:
 
-### Code Review Criteria
+```
+interface Validator<T> {
+    validate(input: unknown): Result<T>
+}
+
+class EmailValidator implements Validator<string> {
+    validate(input: unknown): Result<string> {
+        if (typeof input !== 'string') {
+            return { success: false, error: new Error('Email must be string') }
+        }
+
+        if (!this.isValidEmail(input)) {
+            return { success: false, error: new Error('Invalid email format') }
+        }
+
+        return { success: true, data: input }
+    }
+}
+```
+
+### 2. Authorization Patterns
+Implement consistent permission checking:
+
+```
+interface AuthorizationService {
+    hasPermission(user: User, resource: string, action: string): boolean
+    checkPermission(user: User, resource: string, action: string): void
+}
+
+// Usage
+function deleteUser(userId: string, currentUser: User) {
+    authService.checkPermission(currentUser, 'users', 'delete')
+    // Proceed with deletion
+}
+```
+
+## Universal Principles Checklist
+
+### Architecture Design
+- [ ] Clear separation of concerns
+- [ ] Dependency inversion applied
 - [ ] Single responsibility principle followed
-- [ ] DRY principle applied (no unnecessary duplication)
-- [ ] Proper error handling implemented
-- [ ] Performance considerations addressed
-- [ ] Accessibility standards met (ARIA labels, keyboard navigation)
-- [ ] Security best practices followed
-- [ ] Code is self-documenting or has appropriate documentation
+- [ ] Interface segregation implemented
+- [ ] Open/closed principle respected
 
-### Testing Considerations
-- [ ] Unit tests for utility functions
-- [ ] Integration tests for Firebase operations
-- [ ] Component tests for complex UI logic
-- [ ] E2E tests for critical user flows
-- [ ] Security rule tests for Firestore
+### Code Organization
+- [ ] Feature-based organization over technical grouping
+- [ ] Consistent naming conventions
+- [ ] Clear module boundaries
+- [ ] Appropriate abstraction levels
+- [ ] Documentation for public interfaces
 
-## Development Commands
+### Quality Assurance
+- [ ] Comprehensive error handling
+- [ ] Input validation at boundaries
+- [ ] Structured logging implemented
+- [ ] Performance monitoring in place
+- [ ] Security considerations addressed
 
-```bash
-# Type checking
-npm run type-check
+### Testing Strategy
+- [ ] Test pyramid structure
+- [ ] Dependency injection for testability
+- [ ] Integration test coverage
+- [ ] End-to-end test automation
+- [ ] Performance test scenarios
 
-# Linting and formatting
-npm run lint
-npm run lint:fix
-npm run format
+### Operations
+- [ ] Environment parity maintained
+- [ ] Health checks implemented
+- [ ] Configuration externalized
+- [ ] Deployment automation
+- [ ] Monitoring and alerting
 
-# Testing
-npm run test
-npm run test:watch
-npm run test:coverage
-
-# Build verification
-npm run build
-npm run preview
-```
+These principles apply regardless of whether you're building with vanilla JavaScript, React, Python, Java, or any other technology. Focus on the architectural patterns and adapt the implementation to your chosen tools.
