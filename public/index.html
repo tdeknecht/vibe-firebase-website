@@ -74,6 +74,55 @@
             height: 20px;
         }
 
+        .user-info {
+            display: none;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: block;
+        }
+
+        .user-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-email {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .logout-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .logout-button:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        .logout-button:active {
+            transform: translateY(0);
+        }
+
         .status {
             margin-top: 1rem;
             padding: 0.5rem;
@@ -112,10 +161,18 @@
             Sign in with Google
         </button>
 
+        <div class="user-info" id="userInfo">
+            <img class="user-avatar" id="userAvatar" src="" alt="User Avatar">
+            <div class="user-name"></div>
+            <div class="user-email"></div>
+        </div>
+
+        <button class="logout-button" id="logoutButton">Sign Out</button>
+
         <div class="status" id="status" style="display: none;"></div>
     </div>
 
     <!-- Main application script -->
-    <script type="module" src="../src/js/main.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>

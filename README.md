@@ -30,14 +30,23 @@ A simple, modern web application that demonstrates Firebase authentication with 
    npm install
    ```
 
-2. **Start local server:**
+2. **Build and start development server:**
    ```bash
+   npm run dev
+   ```
+   This will build the project and start the server at `http://localhost:3000`
+
+3. **Alternative - Manual build and serve:**
+   ```bash
+   npm run build
    npx http-server public -p 3000
    ```
 
-3. **Access the application:**
-   - Standard: `http://localhost:3000`
-   - WSL users: Use `npx http-server . -p 3000 -a 0.0.0.0` and access via WSL IP address
+### Available Scripts
+
+- `npm run dev` - Build project and start development server
+- `npm run build` - Build project (copies JS files to public directory)
+- `npm run clean` - Remove built files from public directory
 
 ### WSL Users
 If running in WSL, you may need to:
@@ -56,17 +65,23 @@ The app is pre-configured with Firebase project settings in `src/js/modules/fire
 
 ```
 ├── public/
-│   └── index.html              # Main HTML file
+│   ├── index.html              # Main HTML file
+│   └── js/                     # Built JavaScript files (generated)
+│       ├── modules/
+│       │   ├── auth.js         # Authentication module (copied)
+│       │   ├── firebase.js     # Firebase configuration (copied)
+│       │   └── ui.js          # UI utilities module (copied)
+│       └── main.js            # Application entry point (copied)
 ├── src/
 │   ├── js/
 │   │   ├── modules/
-│   │   │   ├── auth.js         # Authentication module
-│   │   │   ├── firebase.js     # Firebase configuration
-│   │   │   └── ui.js          # UI utilities module
-│   │   └── main.js            # Application entry point
+│   │   │   ├── auth.js         # Authentication module (source)
+│   │   │   ├── firebase.js     # Firebase configuration (source)
+│   │   │   └── ui.js          # UI utilities module (source)
+│   │   └── main.js            # Application entry point (source)
 │   └── css/                   # Stylesheets (for future use)
 │       └── components/        # Component-specific styles
-├── package.json               # Dependencies
+├── package.json               # Dependencies and build scripts
 └── README.md                  # Project documentation
 ```
 
