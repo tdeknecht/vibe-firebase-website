@@ -46,6 +46,25 @@ class App {
                 }
             }
         });
+
+        this.ui.addLogoutButtonListener(async () => {
+            this.ui.showStatus('Signing out...', 'loading');
+
+            try {
+                const result = await this.auth.signOut();
+
+                if (result.success) {
+                    this.ui.showStatus(result.message, 'success');
+                    setTimeout(() => {
+                        this.ui.hideStatus();
+                    }, 2000);
+                } else {
+                    throw result.error;
+                }
+            } catch (error) {
+                this.ui.showStatus(`Error: ${error.message}`, 'error');
+            }
+        });
     }
 
     setupAuthStateListener() {
