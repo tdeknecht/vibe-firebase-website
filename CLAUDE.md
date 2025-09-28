@@ -1,6 +1,18 @@
-# Claude Code Context & Development Guidelines
+# MANDATORY: Claude Code Context & Development Guidelines
 
-This file provides essential context for Claude when working on software projects. **All detailed guidance is located in `./.vibe-prompts/` and should be referenced for architectural and development decisions.**
+⚠️ **CRITICAL INSTRUCTION FOR CLAUDE**:
+Before ANY architectural, implementation, or design decision in this project:
+1. **MUST** reference this file's decision framework below
+2. **MUST** read appropriate `.vibe-prompts/` files for the task type
+3. **MUST** document which guidance files influenced the decision in your response
+4. **MUST** apply established patterns consistently
+5. **MUST** cite specific guidance sections when making architectural choices
+
+🎯 **Non-Negotiable**: This guidance consultation is required for every development task - not optional.
+
+---
+
+This file provides essential context for Claude when working on software projects. **All detailed guidance is located in `./.vibe-prompts/` and must be referenced for architectural and development decisions.**
 
 ## How to Use This Framework
 
@@ -62,4 +74,25 @@ Before making any architectural or implementation decisions, reference the appro
 4. **Document Which Prompts Influenced the Decision**
 5. **Follow Through** with testing and validation as outlined in prompts
 
-The detailed principles, patterns, and best practices are all maintained in the `./.vibe-prompts/` directory. This file serves only as a navigation guide to help locate and apply the appropriate guidance.
+## Session Initialization Protocol
+
+At the start of each development session, Claude must:
+- [ ] Acknowledge this guidance framework is active and mandatory
+- [ ] Confirm understanding of the decision mapping above
+- [ ] Reference appropriate guidance files before making architectural decisions
+- [ ] Document guidance citations in all responses involving design choices
+
+## Response Documentation Template
+
+For any architectural or implementation decision, include:
+
+```markdown
+**Guidance References:**
+- `filename.md` (lines X-Y) - Specific principle applied
+- Decision rationale based on documented patterns
+
+**Patterns Applied:**
+- Pattern name and implementation approach
+```
+
+The detailed principles, patterns, and best practices are all maintained in the `./.vibe-prompts/` directory. This file serves as both a navigation guide and a mandatory protocol for consistent development practices.
