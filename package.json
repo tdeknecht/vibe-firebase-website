@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "build": "mkdir -p public/js && cp -r src/js/* public/js/",
+    "dev": "npm run build && npx http-server public -p 3000",
+    "clean": "rm -rf public/js"
+  },
   "dependencies": {
     "firebase": "^12.3.0"
   }
