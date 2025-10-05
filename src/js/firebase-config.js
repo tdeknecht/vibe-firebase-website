@@ -3,13 +3,13 @@
 // Firebase security is handled by Firestore security rules and Auth settings
 
 export const firebaseConfig = {
-    apiKey: "AIzaSyCNOoLH8SbEWGfsXkTgeUDMJJtuGMEqSx0",
-    authDomain: "base-website-dee90.firebaseapp.com",
-    projectId: "base-website-dee90",
-    storageBucket: "base-website-dee90.firebasestorage.app",
-    messagingSenderId: "171006137222",
-    appId: "1:171006137222:web:bee933e579d0429d0d5207",
-    measurementId: "G-XZG55JGEKV"
+    apiKey: "{{VITE_FIREBASE_API_KEY}}",
+    authDomain: "{{VITE_FIREBASE_AUTH_DOMAIN}}",
+    projectId: "{{VITE_FIREBASE_PROJECT_ID}}",
+    storageBucket: "{{VITE_FIREBASE_STORAGE_BUCKET}}",
+    messagingSenderId: "{{VITE_FIREBASE_MESSAGING_SENDER_ID}}",
+    appId: "{{VITE_FIREBASE_APP_ID}}",
+    measurementId: "{{VITE_FIREBASE_MEASUREMENT_ID}}"
 };
 
 // Development environment check

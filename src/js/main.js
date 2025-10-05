@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { firebaseConfig, validateFirebaseConfig } from './modules/firebase.js';
+import { firebaseConfig, validateFirebaseConfig } from './firebase-config.js';
 import { AuthModule } from './modules/auth.js';
 import { UIModule } from './modules/ui.js';
 
