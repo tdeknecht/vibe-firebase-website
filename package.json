@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "mkdir -p public/js && cp -r src/js/* public/js/",
+    "build": "node scripts/inject-env.js",
     "dev": "npm run build && npx http-server public -p 3000",
     "clean": "rm -rf public/js"
   },

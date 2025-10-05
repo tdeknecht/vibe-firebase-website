@@ -36,7 +36,7 @@ coverage
 node_modules/
 jspm_packages/
 
-# Built files (generated from src/)
+# Built files (generated from src/ with injected environment variables)
 public/js/
 
 # Optional npm cache directory
