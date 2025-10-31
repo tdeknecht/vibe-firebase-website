@@ -25,6 +25,7 @@ Before making any architectural or implementation decisions, reference the appro
 - `code-structure.md` - Universal architecture patterns and organization
 - `modular-architecture-principles.md` - Right-sized modularity approaches
 - `feature-extensibility.md` - Building systems that can grow and evolve
+- `asset-reusability.md` - Resource management and DRY principles for assets
 
 **For Implementation:**
 - `firebase-best-practices.md` - Firebase-specific implementation patterns
@@ -45,6 +46,8 @@ Before making any architectural or implementation decisions, reference the appro
 **Adding New Features** → `modular-architecture-principles.md` + `feature-extensibility.md`
 
 **Refactoring Code** → `code-structure.md` + `modular-architecture-principles.md`
+
+**Working with Assets/Resources** → `asset-reusability.md` + `code-structure.md`
 
 **Security Implementation** → `security-architecture.md`
 
