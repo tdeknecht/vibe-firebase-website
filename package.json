@@ -1,8 +1,10 @@
 {
   "scripts": {
-    "build": "node scripts/inject-env.js",
+    "build:assets": "node scripts/build-assets.js",
+    "build:env": "node scripts/inject-env.js",
+    "build": "npm run build:assets && npm run build:env",
     "dev": "npm run build && npx http-server public -p 3000",
-    "clean": "rm -rf public/js"
+    "clean": "rm -rf public/js public/assets"
   },
   "dependencies": {
     "firebase": "^12.3.0"
