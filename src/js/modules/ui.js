@@ -5,6 +5,8 @@ export class UIModule {
         this.logoutButton = null;
         this.userInfo = null;
         this.userAvatar = null;
+        // Default avatar placeholder (reusable asset)
+        this.defaultAvatarURL = '/assets/images/placeholders/default-avatar.svg';
     }
 
     init() {
@@ -38,8 +40,17 @@ export class UIModule {
                 this.userInfo.querySelector('.user-email').textContent = user.email;
             }
             if (this.userAvatar) {
-                this.userAvatar.src = user.photoURL || '';
+                // Use photoURL if available, otherwise use default avatar placeholder
+                this.userAvatar.src = user.photoURL || this.defaultAvatarURL;
                 this.userAvatar.alt = `${user.displayName}'s Avatar`;
+
+                // Add error handler for failed image loads
+                this.userAvatar.onerror = () => {
+                    // Prevent infinite loop if default avatar also fails
+                    if (this.userAvatar.src !== this.defaultAvatarURL) {
+                        this.userAvatar.src = this.defaultAvatarURL;
+                    }
+                };
             }
             if (this.logoutButton) this.logoutButton.style.display = 'block';
         } else {
