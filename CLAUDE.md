@@ -3,7 +3,7 @@
 ⚠️ **CRITICAL INSTRUCTION FOR CLAUDE**:
 Before ANY architectural, implementation, or design decision in this project:
 1. **MUST** reference this file's decision framework below
-2. **MUST** read appropriate `.vibe-prompts/` files for the task type
+2. **MUST** read appropriate `.prompts/` files for the task type
 3. **MUST** document which guidance files influenced the decision in your response
 4. **MUST** apply established patterns consistently
 5. **MUST** cite specific guidance sections when making architectural choices
@@ -12,12 +12,12 @@ Before ANY architectural, implementation, or design decision in this project:
 
 ---
 
-This file provides essential context for Claude when working on software projects. **All detailed guidance is located in `./.vibe-prompts/` and must be referenced for architectural and development decisions.**
+This file provides essential context for Claude when working on software projects. **All detailed guidance is located in `./.prompts/` and must be referenced for architectural and development decisions.**
 
 ## How to Use This Framework
 
 ### 1. Always Consult Prompts First
-Before making any architectural or implementation decisions, reference the appropriate files in `./.vibe-prompts/` for detailed guidance and best practices.
+Before making any architectural or implementation decisions, reference the appropriate files in `./.prompts/` for detailed guidance and best practices.
 
 ### 2. Prompt File Reference Map
 
@@ -72,7 +72,7 @@ Before making any architectural or implementation decisions, reference the appro
 ## Workflow Integration
 
 1. **Identify the Problem Type** (architecture, security, performance, etc.)
-2. **Reference Appropriate Prompt File(s)** from `./.vibe-prompts/`
+2. **Reference Appropriate Prompt File(s)** from `./.prompts/`
 3. **Apply Guidance** to the specific technology and context
 4. **Document Which Prompts Influenced the Decision**
 5. **Follow Through** with testing and validation as outlined in prompts
@@ -98,4 +98,4 @@ For any architectural or implementation decision, include:
 - Pattern name and implementation approach
 ```
 
-The detailed principles, patterns, and best practices are all maintained in the `./.vibe-prompts/` directory. This file serves as both a navigation guide and a mandatory protocol for consistent development practices.
+The detailed principles, patterns, and best practices are all maintained in the `./.prompts/` directory. This file serves as both a navigation guide and a mandatory protocol for consistent development practices.

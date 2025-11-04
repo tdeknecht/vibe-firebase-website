@@ -1,4 +1,4 @@
-# Vibe Firebase Website
+# Firebase Base Website
 
 A simple, modern web application that demonstrates Firebase authentication with Google sign-in. The app features a clean, responsive interface with a gradient background and smooth animations.
 
@@ -98,7 +98,7 @@ The app is pre-configured with Firebase project settings in `src/js/modules/fire
 │   ├── build-assets.js                 # Asset pipeline script
 │   └── inject-env.js                   # Environment injection script
 │
-├── .vibe-prompts/                      # Development guidance
+├── .prompts/                           # Development guidance
 │   ├── asset-reusability.md            # Asset management patterns
 │   ├── code-structure.md               # Architecture patterns
 │   └── ... (other guidance files)

@@ -75,6 +75,9 @@ public/assets/
 *.swo
 *~
 
+# Claude Code user settings
+.claude/
+
 # OS generated files
 .DS_Store
 .DS_Store?
