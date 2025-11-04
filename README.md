@@ -98,7 +98,7 @@ The app is pre-configured with Firebase project settings in `src/js/modules/fire
 │   ├── build-assets.js                 # Asset pipeline script
 │   └── inject-env.js                   # Environment injection script
 │
-├── .vibe-prompts/                      # Development guidance
+├── .prompts/                           # Development guidance
 │   ├── asset-reusability.md            # Asset management patterns
 │   ├── code-structure.md               # Architecture patterns
 │   └── ... (other guidance files)
