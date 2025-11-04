@@ -1,4 +1,4 @@
-# Vibe Firebase Website
+# Firebase Base Website
 
 A simple, modern web application that demonstrates Firebase authentication with Google sign-in. The app features a clean, responsive interface with a gradient background and smooth animations.
 

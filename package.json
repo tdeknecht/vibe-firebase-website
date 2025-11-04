@@ -1,4 +1,7 @@
 {
+  "name": "firebase-base-website",
+  "version": "1.0.0",
+  "description": "A simple, modern web application that demonstrates Firebase authentication with Google sign-in",
   "scripts": {
     "build:assets": "node scripts/build-assets.js",
     "build:env": "node scripts/inject-env.js",
