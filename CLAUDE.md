@@ -39,6 +39,9 @@ Before making any architectural or implementation decisions, reference the appro
 - `finops-free-tier-maximization.md` - Optimizing for free tier services
 - `platform-simplification.md` - Platform selection and simplification
 
+**For Version Control:**
+- `git-best-practices.md` - Git workflows, commit conventions, and branching strategies
+
 ## Decision Framework
 
 ### When to Reference Which Prompt
@@ -60,6 +63,8 @@ Before making any architectural or implementation decisions, reference the appro
 **Cost Management** → `finops-free-tier-maximization.md` + `budget-resilience.md`
 
 **Technology Selection** → `platform-simplification.md` + relevant technology-specific prompts
+
+**Version Control & Commits** → `git-best-practices.md`
 
 ## Core Working Principles
 
