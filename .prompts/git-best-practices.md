@@ -1,0 +1,828 @@
+# Git Best Practices Prompt
+
+## Version Control Strategy for Professional Development
+
+When working with Git in this project, follow these well-architected patterns for maintainable, collaborative, and traceable version control. These practices ensure clear history, easy rollbacks, and effective team collaboration.
+
+---
+
+## Commit Message Convention
+
+### Conventional Commits Format
+
+Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification for clear, semantic commit messages:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+#### Commit Types
+
+- **feat**: New feature or functionality
+- **fix**: Bug fix
+- **docs**: Documentation changes only
+- **style**: Code style changes (formatting, whitespace, no logic changes)
+- **refactor**: Code restructuring without changing behavior
+- **perf**: Performance improvements
+- **test**: Adding or updating tests
+- **chore**: Maintenance tasks (dependencies, build config, etc.)
+- **ci**: CI/CD pipeline changes
+- **build**: Build system or external dependency changes
+- **revert**: Reverting a previous commit
+
+#### Good Commit Messages
+
+```bash
+# ✅ Good: Clear, specific, follows convention
+feat(auth): add Google OAuth sign-in integration
+
+Implements Firebase Authentication with Google provider.
+Users can now sign in using their Google accounts.
+
+- Add auth.js module with signIn/signOut functions
+- Update UI to show user profile after authentication
+- Add error handling for failed sign-in attempts
+
+Closes #42
+
+# ✅ Good: Descriptive with context
+fix(ui): resolve avatar fallback display issue
+
+Avatar images now properly fall back to default-avatar.svg
+when user profile photo fails to load or is missing.
+
+Fixes #58
+
+# ✅ Good: Breaking change clearly marked
+feat(api)!: migrate to Firebase SDK v10
+
+BREAKING CHANGE: Firebase SDK upgraded from v9 to v10.
+Update import statements from 'firebase/compat' to modular SDK.
+
+Migration guide: docs/firebase-v10-migration.md
+
+# ✅ Good: Simple change, concise message
+docs: update README with deployment instructions
+
+# ✅ Good: Multiple related changes grouped logically
+chore: update dependencies and fix vulnerabilities
+
+- Update firebase from 12.0.0 to 12.3.0
+- Update all dev dependencies to latest versions
+- Fix 3 security vulnerabilities identified by npm audit
+```
+
+#### Bad Commit Messages
+
+```bash
+# ❌ Bad: Vague, no context
+fix: fixed bug
+
+# ❌ Bad: Too generic
+update code
+
+# ❌ Bad: Multiple unrelated changes
+feat: add login, update README, fix CSS, and refactor utils
+
+# ❌ Bad: Not following convention
+Added new feature for users
+
+# ❌ Bad: No description of what or why
+wip
+
+# ❌ Bad: Commit message doesn't match changes
+fix(auth): update documentation
+```
+
+---
+
+## Branch Naming Strategy
+
+### Branch Name Format
+
+```
+<type>/<short-description>
+```
+
+#### Branch Types
+
+- **feat/** - New features
+- **fix/** - Bug fixes
+- **docs/** - Documentation updates
+- **refactor/** - Code refactoring
+- **test/** - Test additions or updates
+- **chore/** - Maintenance tasks
+- **hotfix/** - Urgent production fixes
+- **release/** - Release preparation
+
+#### Good Branch Names
+
+```bash
+# ✅ Good: Clear feature branch
+feat/google-oauth-integration
+
+# ✅ Good: Specific bug fix
+fix/avatar-fallback-display
+
+# ✅ Good: Descriptive refactoring
+refactor/modularize-auth-logic
+
+# ✅ Good: Documentation update
+docs/add-deployment-guide
+
+# ✅ Good: Hotfix with issue number
+hotfix/security-vulnerability-#123
+
+# ✅ Good: Release branch
+release/v1.2.0
+```
+
+#### Bad Branch Names
+
+```bash
+# ❌ Bad: Too vague
+fix/bugs
+
+# ❌ Bad: Personal branch (use feat/ or fix/ instead)
+john-dev
+
+# ❌ Bad: No context
+temp
+
+# ❌ Bad: Spaces in name
+feat/new feature
+
+# ❌ Bad: Random naming
+my-branch-123
+```
+
+---
+
+## Commit Granularity
+
+### Atomic Commits Principle
+
+Each commit should represent a single, logical change that can be understood and potentially reverted independently.
+
+#### Good Commit Granularity
+
+```bash
+# ✅ Good: Single logical change
+git add firebase.json .firebaserc
+git commit -m "feat: add Firebase Hosting configuration"
+
+git add package.json
+git commit -m "feat: add deployment scripts for Firebase"
+
+git add README.md
+git commit -m "docs: add Firebase Hosting deployment guide"
+
+# ✅ Good: Related changes grouped
+git add src/js/modules/auth.js src/js/modules/ui.js
+git commit -m "feat(auth): implement Google sign-in with UI integration"
+```
+
+#### Bad Commit Granularity
+
+```bash
+# ❌ Bad: Too many unrelated changes
+git add .
+git commit -m "feat: add hosting, update docs, fix bugs, refactor code"
+
+# ❌ Bad: Incomplete change (won't work without other files)
+git add src/js/modules/auth.js
+git commit -m "feat: add authentication"
+# (Missing firebase-config.js, UI updates, etc.)
+
+# ❌ Bad: Too granular (changes are inseparable)
+git add src/js/modules/auth.js
+git commit -m "feat: add import statement"
+git add src/js/modules/auth.js
+git commit -m "feat: add signIn function"
+git add src/js/modules/auth.js
+git commit -m "feat: add signOut function"
+# These should be one commit
+```
+
+---
+
+## Git Workflow Patterns
+
+### Feature Branch Workflow
+
+```bash
+# 1. Start from main branch
+git checkout main
+git pull origin main
+
+# 2. Create feature branch
+git checkout -b feat/google-oauth-integration
+
+# 3. Make changes and commit atomically
+git add src/js/modules/auth.js
+git commit -m "feat(auth): add Google OAuth sign-in logic"
+
+git add src/js/modules/ui.js
+git commit -m "feat(ui): add user profile display after sign-in"
+
+git add README.md
+git commit -m "docs: document Google sign-in setup"
+
+# 4. Push feature branch
+git push -u origin feat/google-oauth-integration
+
+# 5. Create pull request for review
+# (Done via GitHub/GitLab UI)
+
+# 6. After approval, merge via PR
+# (Preferably squash merge for clean history on main)
+
+# 7. Clean up
+git checkout main
+git pull origin main
+git branch -d feat/google-oauth-integration
+```
+
+### Hotfix Workflow
+
+```bash
+# 1. Create hotfix branch from main
+git checkout main
+git checkout -b hotfix/security-patch-#123
+
+# 2. Make fix
+git add src/js/modules/auth.js
+git commit -m "fix(auth): patch authentication vulnerability CVE-2024-1234"
+
+# 3. Push and create urgent PR
+git push -u origin hotfix/security-patch-#123
+
+# 4. After merge, tag the release
+git checkout main
+git pull origin main
+git tag -a v1.0.1 -m "Security patch release v1.0.1"
+git push origin v1.0.1
+```
+
+---
+
+## Merge vs Rebase
+
+### When to Merge
+
+**Use merge when:**
+- Integrating feature branches into main
+- Preserving complete branch history is important
+- Working on shared/collaborative branches
+- Creating explicit merge commits for tracking
+
+```bash
+# Merge feature branch into main
+git checkout main
+git merge feat/new-feature --no-ff
+# --no-ff creates a merge commit even if fast-forward is possible
+```
+
+### When to Rebase
+
+**Use rebase when:**
+- Updating feature branch with latest main changes
+- Cleaning up local commit history before pushing
+- Creating linear history for easier navigation
+
+```bash
+# Update feature branch with main changes
+git checkout feat/my-feature
+git fetch origin
+git rebase origin/main
+
+# Interactive rebase to clean up commits
+git rebase -i HEAD~3
+# Allows squashing, reordering, editing commits
+```
+
+### ⚠️ Never Rebase Public Branches
+
+```bash
+# ❌ NEVER do this on main/shared branches
+git checkout main
+git rebase feat/my-feature  # DON'T!
+
+# ✅ Always use merge for public branches
+git checkout main
+git merge feat/my-feature
+```
+
+---
+
+## Git Hooks
+
+### Pre-commit Hook Example
+
+Automatically run checks before committing:
+
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+
+echo "Running pre-commit checks..."
+
+# Run linter
+npm run lint
+if [ $? -ne 0 ]; then
+  echo "❌ Lint errors found. Please fix before committing."
+  exit 1
+fi
+
+# Run tests
+npm run test
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Please fix before committing."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed"
+exit 0
+```
+
+### Using Husky for Git Hooks
+
+```bash
+# Install husky
+npm install --save-dev husky
+
+# Initialize husky
+npx husky install
+
+# Add pre-commit hook
+npx husky add .husky/pre-commit "npm run lint && npm test"
+```
+
+### Pre-commit Configuration
+
+```json
+// package.json
+{
+  "scripts": {
+    "prepare": "husky install",
+    "lint": "eslint src/",
+    "test": "jest"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm test",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  }
+}
+```
+
+---
+
+## Working with Remotes
+
+### Remote Management
+
+```bash
+# View remotes
+git remote -v
+
+# Add remote
+git remote add upstream https://github.com/original/repo.git
+
+# Fetch from remote
+git fetch origin
+
+# Pull with rebase (cleaner history)
+git pull --rebase origin main
+
+# Push to remote
+git push origin feat/my-feature
+
+# Push tags
+git push origin --tags
+
+# Force push (use with caution!)
+git push --force-with-lease origin feat/my-feature
+# --force-with-lease is safer than --force
+```
+
+---
+
+## Stashing Changes
+
+### Save Work in Progress
+
+```bash
+# Save current changes
+git stash
+
+# Save with descriptive message
+git stash save "WIP: authentication refactoring"
+
+# List stashes
+git stash list
+
+# Apply most recent stash
+git stash apply
+
+# Apply specific stash
+git stash apply stash@{2}
+
+# Apply and remove stash
+git stash pop
+
+# Drop stash
+git stash drop stash@{1}
+
+# Clear all stashes
+git stash clear
+```
+
+---
+
+## Undoing Changes
+
+### Safe Undo Patterns
+
+```bash
+# Undo unstaged changes to a file
+git checkout -- src/js/modules/auth.js
+
+# Undo all unstaged changes
+git checkout -- .
+
+# Unstage file (keep changes)
+git reset HEAD src/js/modules/auth.js
+
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+
+# Undo last commit (discard changes) ⚠️
+git reset --hard HEAD~1
+
+# Revert a specific commit (creates new commit)
+git revert abc1234
+
+# Amend last commit (only if not pushed!)
+git add forgotten-file.js
+git commit --amend --no-edit
+```
+
+### ⚠️ Dangerous Operations
+
+```bash
+# ❌ Use with extreme caution - destructive!
+git reset --hard HEAD~5  # Loses 5 commits permanently
+git clean -fd             # Deletes untracked files
+git push --force         # Can overwrite others' work
+
+# ✅ Safer alternatives
+git reset --soft HEAD~5  # Keep changes, undo commits
+git clean -fdn           # Dry-run to see what would be deleted
+git push --force-with-lease  # Only force if no one else pushed
+```
+
+---
+
+## Tagging Releases
+
+### Semantic Versioning Tags
+
+```bash
+# Create annotated tag
+git tag -a v1.0.0 -m "Release version 1.0.0"
+
+# Create lightweight tag
+git tag v1.0.0
+
+# List tags
+git tag -l
+
+# Show tag details
+git show v1.0.0
+
+# Push single tag
+git push origin v1.0.0
+
+# Push all tags
+git push origin --tags
+
+# Delete local tag
+git tag -d v1.0.0
+
+# Delete remote tag
+git push origin --delete v1.0.0
+```
+
+### Tag Naming Convention
+
+```bash
+# ✅ Good: Semantic versioning
+v1.0.0    # Major release
+v1.1.0    # Minor release (new features)
+v1.1.1    # Patch release (bug fixes)
+
+# ✅ Good: Pre-release tags
+v2.0.0-alpha.1
+v2.0.0-beta.1
+v2.0.0-rc.1
+
+# ❌ Bad: Inconsistent naming
+release-1
+version_2
+final
+```
+
+---
+
+## .gitignore Best Practices
+
+### Comprehensive .gitignore
+
+```gitignore
+# Dependencies
+node_modules/
+package-lock.json  # Only if using yarn
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+public/js/
+public/assets/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Firebase
+.firebase/
+*-debug.log
+firebase-debug.log
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary
+*.tmp
+*.temp
+.cache/
+```
+
+### Check Ignored Files
+
+```bash
+# See what's being ignored
+git status --ignored
+
+# Check if file is ignored
+git check-ignore -v src/file.js
+
+# List all ignored files
+git ls-files --others --ignored --exclude-standard
+```
+
+---
+
+## Git Aliases for Efficiency
+
+### Useful Aliases
+
+```bash
+# Configure aliases
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit
+git config --global alias.st status
+git config --global alias.unstage 'reset HEAD --'
+git config --global alias.last 'log -1 HEAD'
+git config --global alias.visual 'log --oneline --graph --decorate --all'
+git config --global alias.amend 'commit --amend --no-edit'
+
+# View configured aliases
+git config --get-regexp alias
+```
+
+### Advanced Aliases
+
+```bash
+# Pretty log
+git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+
+# Show branches sorted by last commit
+git config --global alias.recent "branch --sort=-committerdate --format='%(committerdate:short) %(refname:short)'"
+
+# Undo last commit but keep changes
+git config --global alias.undo 'reset --soft HEAD~1'
+```
+
+---
+
+## Code Review Best Practices
+
+### Creating Pull Requests
+
+**Good PR Description:**
+```markdown
+## Summary
+Add Firebase Hosting deployment configuration with preview channels
+
+## Changes
+- Add firebase.json with hosting config, caching headers, and security rules
+- Add .firebaserc with project configuration
+- Add deployment scripts: `deploy`, `deploy:preview`, `firebase:open`
+- Update README with deployment documentation
+
+## Testing
+- ✅ Preview deployment successful
+- ✅ Google authentication works on live URL
+- ✅ Caching headers verified in DevTools
+
+## Related Issues
+Closes #42
+Related to #38
+
+## Screenshots
+[Screenshot of deployed site]
+```
+
+### Reviewing Commits
+
+```bash
+# Review changes in PR branch
+git diff main...feat/new-feature
+
+# Review specific commit
+git show abc1234
+
+# Review changes to specific file
+git log -p src/js/modules/auth.js
+
+# Review branch commits
+git log main..feat/new-feature --oneline
+```
+
+---
+
+## Git Best Practices Checklist
+
+### Before Committing
+- [ ] Review changes: `git diff`
+- [ ] Stage only related files: `git add <specific-files>`
+- [ ] Run tests: `npm test`
+- [ ] Run linter: `npm run lint`
+- [ ] Write clear commit message following convention
+- [ ] Commit message explains "why", not just "what"
+
+### Before Pushing
+- [ ] Commits are atomic and logical
+- [ ] No secrets or sensitive data in commits
+- [ ] Pull latest changes: `git pull --rebase origin main`
+- [ ] Resolve any merge conflicts
+- [ ] Verify all tests pass after rebase
+
+### Before Creating PR
+- [ ] Branch is up to date with main
+- [ ] All commits follow commit message convention
+- [ ] PR has clear title and description
+- [ ] Related issues are linked
+- [ ] Self-review completed
+- [ ] Tests added for new features
+
+### After PR Approval
+- [ ] Squash commits if history is messy
+- [ ] Merge using appropriate strategy
+- [ ] Delete feature branch after merge
+- [ ] Verify deployment was successful
+- [ ] Close related issues
+
+---
+
+## Common Git Anti-Patterns to Avoid
+
+- ❌ Committing directly to main branch
+- ❌ Using `git add .` without reviewing changes
+- ❌ Large commits with many unrelated changes
+- ❌ Commit messages like "fix", "update", "wip"
+- ❌ Committing generated files (node_modules, build artifacts)
+- ❌ Committing secrets (.env files, API keys)
+- ❌ Force pushing to shared branches
+- ❌ Rebasing public/shared branches
+- ❌ Not pulling before pushing
+- ❌ Leaving merge conflict markers in code
+- ❌ Creating overly long-lived feature branches
+- ❌ Mixing formatting changes with logic changes
+
+---
+
+## Git Commands Quick Reference
+
+```bash
+# Essential Commands
+git status                  # Check working directory status
+git add <file>             # Stage file
+git commit -m "message"    # Commit staged changes
+git push                   # Push to remote
+git pull                   # Pull from remote
+
+# Branching
+git branch                 # List branches
+git branch <name>          # Create branch
+git checkout <name>        # Switch branch
+git checkout -b <name>     # Create and switch
+git branch -d <name>       # Delete branch
+
+# History
+git log                    # View commit history
+git log --oneline          # Compact history
+git log --graph            # Visual branch history
+git show <commit>          # Show commit details
+
+# Undoing
+git reset HEAD <file>      # Unstage file
+git checkout -- <file>     # Discard changes
+git revert <commit>        # Revert commit
+git reset --soft HEAD~1    # Undo last commit
+
+# Remote
+git remote -v              # List remotes
+git fetch                  # Fetch from remote
+git pull --rebase          # Pull with rebase
+git push origin <branch>   # Push branch
+
+# Stashing
+git stash                  # Save changes
+git stash pop              # Apply and remove
+git stash list             # List stashes
+```
+
+---
+
+## Troubleshooting Common Issues
+
+### Merge Conflicts
+
+```bash
+# View conflicted files
+git status
+
+# Resolve conflicts in editor, then:
+git add <resolved-file>
+git commit
+
+# Abort merge
+git merge --abort
+```
+
+### Accidentally Committed to Wrong Branch
+
+```bash
+# Move commit to new branch
+git branch new-branch
+git reset --hard HEAD~1
+git checkout new-branch
+```
+
+### Need to Undo Pushed Commit
+
+```bash
+# Use revert (creates new commit)
+git revert <commit-hash>
+git push origin main
+
+# ❌ Avoid force push to shared branches
+```
+
+### Forgot to Add File to Commit
+
+```bash
+# Amend last commit (only if not pushed!)
+git add forgotten-file.js
+git commit --amend --no-edit
+```
+
+---
+
+## Resources
+
+- [Conventional Commits](https://www.conventionalcommits.org/)
+- [Git Official Documentation](https://git-scm.com/doc)
+- [Semantic Versioning](https://semver.org/)
+- [Pro Git Book](https://git-scm.com/book/en/v2)
+- [GitHub Flow](https://guides.github.com/introduction/flow/)
