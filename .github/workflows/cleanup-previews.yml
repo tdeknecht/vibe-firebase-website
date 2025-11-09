@@ -1,0 +1,53 @@
+name: Cleanup Preview Channels
+
+on:
+  # Run manually from Actions tab
+  workflow_dispatch:
+
+  # Run weekly on Sundays at midnight UTC
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  cleanup:
+    name: Clean up expired preview channels
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Create service account key file
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/service-account.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/service-account.json" >> $GITHUB_ENV
+
+      - name: List and clean up expired channels
+        run: |
+          echo "🧹 Cleaning up expired preview channels..."
+          firebase hosting:channel:list --project ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+
+          # Note: Firebase automatically expires preview channels after their expiration date
+          # This workflow serves as a manual trigger if needed
+          echo "✅ Cleanup check complete"
+          echo "ℹ️  Preview channels automatically expire after their configured duration"
+
+      - name: Remove service account key file
+        if: always()
+        run: rm -f $HOME/service-account.json
+
+      - name: Cleanup summary
+        run: |
+          echo "📊 Cleanup Summary"
+          echo "- Expired channels are automatically removed by Firebase"
+          echo "- Manual cleanup can be done via Firebase Console if needed"
+          echo "- Preview channel default expiration: 7 days"
