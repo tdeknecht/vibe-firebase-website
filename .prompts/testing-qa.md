@@ -1,5 +1,10 @@
 # Testing & Quality Assurance Prompt for Firebase Applications
 
+> **Last Updated:** 2025-11-08
+> **Testing Libraries:** @testing-library/react v14+, jest v29+, playwright v1.40+
+> **Node.js:** 24 LTS
+> **Next Review:** 2026-02-08
+
 ## Comprehensive Testing Strategy
 
 When implementing testing for this Firebase application, follow these well-architected testing patterns for quality assurance, security validation, and reliability:

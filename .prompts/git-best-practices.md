@@ -292,6 +292,206 @@ git commit -m "feat: add signOut function"
 # These should be one commit
 ```
 
+### Organizing Mixed Changes into Logical Commits
+
+When you have accumulated multiple unrelated changes in your working directory, organize them into logical commits by **change category** rather than committing everything at once.
+
+#### Step 1: Categorize Your Changes
+
+First, analyze what changed and group by logical purpose:
+
+```bash
+# Review all changes
+git status
+git diff --stat
+
+# Categorize changes mentally:
+# - Documentation updates
+# - Dependency changes
+# - Source code changes
+# - Configuration files
+# - CI/CD infrastructure
+# - Testing changes
+```
+
+#### Step 2: Commit by Category
+
+Create commits in a logical order (dependencies before code that uses them):
+
+```bash
+# ✅ Good: Organized sequence
+# 1. Infrastructure/tooling changes first
+git add .nvmrc
+git commit -m "chore: add Node.js version pinning"
+
+# 2. Dependency updates
+git add package.json package-lock.json
+git commit -m "chore: update dependencies"
+
+# 3. Source code changes that depend on new dependencies
+git add src/js/main.js src/js/modules/auth.js
+git commit -m "feat: implement authentication module"
+
+# 4. Configuration changes
+git add firebase.json .firebaserc
+git commit -m "feat: add Firebase Hosting configuration"
+
+# 5. CI/CD pipelines
+git add .github/workflows/
+git commit -m "ci: add deployment workflows"
+
+# 6. Documentation last
+git add README.md docs/
+git commit -m "docs: update deployment guide"
+```
+
+#### Step 3: Apply the Logical Grouping Test
+
+**Ask for each commit:**
+1. ✅ **Single Purpose**: Does this commit serve one clear purpose?
+2. ✅ **Self-Contained**: Can a reviewer understand this commit in isolation?
+3. ✅ **Independently Revertible**: Could we safely revert just this commit?
+4. ✅ **Semantic Type**: Does the commit type accurately reflect all changes?
+
+#### Common Change Categories and Commit Order
+
+**Recommended commit sequence for complex features:**
+
+```bash
+# 1. Documentation/Guidance (can be first or last)
+# - Prompt updates
+# - Architecture decision records
+# Commit type: docs
+
+# 2. Infrastructure Setup
+# - Version managers (.nvmrc, .ruby-version)
+# - Build tools
+# - Environment configuration
+# Commit type: chore
+
+# 3. Dependency Management
+# - package.json changes
+# - lock file regeneration
+# Commit type: chore or build
+
+# 4. Configuration Files
+# - App configuration
+# - Service configuration (Firebase, AWS, etc.)
+# Commit type: feat or chore
+
+# 5. Source Code Implementation
+# - Core business logic
+# - New features
+# - Bug fixes
+# Commit type: feat, fix, or refactor
+
+# 6. Tests
+# - Unit tests
+# - Integration tests
+# - E2E tests
+# Commit type: test
+
+# 7. CI/CD Pipelines
+# - Workflow files
+# - Deployment scripts
+# Commit type: ci
+
+# 8. Documentation (if not done first)
+# - README updates
+# - API documentation
+# - User guides
+# Commit type: docs
+```
+
+#### Example: Organizing a Feature Branch with Mixed Changes
+
+**Scenario**: You've been working on GitHub Actions deployment and have:
+- Updated 3 prompt files
+- Modified package.json (engines + removed dependency)
+- Regenerated package-lock.json
+- Updated Firebase SDK version in 2 source files
+- Added 4 GitHub workflow files
+- Added .nvmrc
+- Modified CLAUDE.md
+
+**❌ Bad approach:**
+```bash
+git add .
+git commit -m "feat: add GitHub Actions deployment"
+# Mixes docs, dependencies, source code, CI/CD - reviewer nightmare!
+```
+
+**✅ Good approach:**
+```bash
+# Commit 1: Version management
+git add .nvmrc package.json
+git commit -m "chore: standardize Node.js version to 24 LTS"
+
+# Commit 2: Dependency cleanup
+git add package.json package-lock.json
+git commit -m "chore: remove firebase npm dependency"
+
+# Commit 3: SDK version update
+git add src/js/main.js src/js/modules/auth.js
+git commit -m "chore: update Firebase SDK to 10.13.2"
+
+# Commit 4: Documentation metadata
+git add .prompts/deployment-cicd.md .prompts/firebase-best-practices.md .prompts/testing-qa.md
+git commit -m "docs: add version tracking metadata to prompts"
+
+# Commit 5: CI/CD guidance updates
+git add .prompts/deployment-cicd.md
+git commit -m "docs: migrate CI/CD guidance to service accounts"
+
+# Commit 6: GitHub Actions implementation
+git add .github/
+git commit -m "ci: add GitHub Actions deployment workflows"
+
+# Commit 7: Guidance framework
+git add .prompts/prompt-maintenance.md CLAUDE.md
+git commit -m "docs: add prompt maintenance framework"
+```
+
+**Benefits of this approach:**
+- Each commit has a clear, single purpose
+- Changes can be reviewed individually
+- Easy to cherry-pick specific changes
+- Clear project evolution history
+- Simple to revert specific aspects
+
+#### Using `git add -p` for Partial File Commits
+
+When a single file has multiple unrelated changes, use interactive staging:
+
+```bash
+# Stage parts of a file interactively
+git add -p src/js/main.js
+
+# Interactive prompt allows you to:
+# - y: stage this hunk
+# - n: don't stage this hunk
+# - s: split into smaller hunks
+# - e: manually edit the hunk
+
+# Example workflow:
+git add -p package.json  # Stage only engines addition
+git commit -m "chore: add Node.js version requirement"
+
+git add package.json     # Stage dependency removal
+git commit -m "chore: remove firebase npm dependency"
+```
+
+#### Quick Reference: Commit Organization Checklist
+
+Before committing, ask:
+- [ ] Have I reviewed what changed? (`git status`, `git diff --stat`)
+- [ ] Can I group changes into logical categories?
+- [ ] Am I mixing unrelated change types? (docs + code + ci)
+- [ ] Would each commit make sense in isolation?
+- [ ] Is the commit order logical? (dependencies → code → tests → docs)
+- [ ] Does each commit have an accurate, descriptive message?
+- [ ] Could a reviewer understand each commit independently?
+
 ---
 
 ## Git Workflow Patterns

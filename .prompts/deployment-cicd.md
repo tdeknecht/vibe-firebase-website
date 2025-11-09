@@ -1,5 +1,11 @@
 # Deployment & CI/CD Prompt for Firebase Applications
 
+> **Last Updated:** 2025-11-08
+> **GitHub Actions:** actions/checkout@v4, actions/setup-node@v4
+> **Node.js:** 24 LTS (Active until April 2028)
+> **Authentication:** Service Account (CI tokens deprecated)
+> **Next Review:** 2026-02-08
+
 ## Modern CI/CD Pipeline Architecture
 
 When implementing deployment strategies for this Firebase application, follow these well-architected patterns for automated, secure, and reliable deployments. **For free tier CI/CD**, see `finops-free-tier-maximization.md` for GitHub Actions optimization and free deployment strategies.
@@ -20,7 +26,7 @@ on:
     branches: [main]
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '24'
   FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
 
 jobs:
@@ -86,8 +92,6 @@ jobs:
 
       - name: Start Firebase emulators
         run: firebase emulators:start --only firestore,auth &
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Wait for emulators
         run: sleep 10
@@ -122,8 +126,6 @@ jobs:
 
       - name: Start Firebase emulators
         run: firebase emulators:start --only firestore,auth,functions &
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Wait for emulators
         run: sleep 15
@@ -233,6 +235,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create service account credentials
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/gcp-key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcp-key.json" >> $GITHUB_ENV
+
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
@@ -240,13 +247,13 @@ jobs:
         run: |
           firebase use staging
           firebase deploy --only hosting,firestore:rules,storage
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Deploy Cloud Functions (Staging)
         run: firebase deploy --only functions
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Cleanup credentials
+        if: always()
+        run: rm -f $HOME/gcp-key.json
 
       - name: Run smoke tests against staging
         run: npm run test:smoke -- --baseUrl=https://staging-app.web.app
@@ -277,6 +284,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create service account credentials
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/gcp-key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcp-key.json" >> $GITHUB_ENV
+
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
@@ -284,13 +296,13 @@ jobs:
         run: |
           firebase use production
           firebase deploy --only hosting,firestore:rules,storage
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Deploy Cloud Functions (Production)
         run: firebase deploy --only functions
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Cleanup credentials
+        if: always()
+        run: rm -f $HOME/gcp-key.json
 
       - name: Run smoke tests against production
         run: npm run test:smoke -- --baseUrl=https://app.web.app
@@ -375,11 +387,12 @@ jobs:
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
 
       - name: Deploy to Firebase Preview
-        run: |
-          firebase use preview
-          firebase hosting:channel:deploy pr-${{ github.event.number }} --expires 7d
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+          expires: 7d
 
       - name: Comment preview URL
         uses: actions/github-script@v6
@@ -681,10 +694,25 @@ interface CanaryMetrics {
 
 ### Security and Secrets Management
 
+> **Last Updated:** 2025-01-08 | **Firebase SDK:** v10+ | **GitHub Actions:** actions/checkout@v4
+
 #### 1. GitHub Secrets Configuration
+
+**Modern Approach (Service Account Authentication):**
+
+Firebase has deprecated `firebase login:ci` tokens. Use **service account authentication** instead:
+
 ```bash
-# Required GitHub secrets for CI/CD
-gh secret set FIREBASE_TOKEN --body "$(firebase login:ci)"
+# Step 1: Create service account in Google Cloud Console
+# - Go to https://console.cloud.google.com
+# - Navigate to IAM & Admin > Service Accounts
+# - Create service account with "Firebase Hosting Admin" role
+# - Download JSON key
+
+# Step 2: Add service account JSON as GitHub secret
+gh secret set FIREBASE_SERVICE_ACCOUNT --body "$(cat service-account-key.json)"
+
+# Step 3: Add Firebase configuration secrets
 gh secret set FIREBASE_PROJECT_ID --body "my-app-prod"
 gh secret set NEXT_PUBLIC_FIREBASE_API_KEY --body "your-api-key"
 gh secret set NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN --body "my-app.firebaseapp.com"
@@ -695,6 +723,16 @@ gh secret set SLACK_WEBHOOK_URL --body "https://hooks.slack.com/services/..."
 # Environment-specific secrets
 gh secret set STAGING_FIREBASE_PROJECT_ID --body "my-app-staging"
 gh secret set PROD_FIREBASE_PROJECT_ID --body "my-app-prod"
+
+# IMPORTANT: Delete the service account JSON file after adding to GitHub
+rm service-account-key.json
+```
+
+**⚠️ Deprecated Approach (Do Not Use):**
+```bash
+# ❌ DEPRECATED - Will be removed in future Firebase CLI versions
+# firebase login:ci
+# gh secret set FIREBASE_TOKEN --body "$(firebase login:ci)"
 ```
 
 #### 2. Secure Environment Variable Management

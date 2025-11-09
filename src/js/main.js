@@ -1,4 +1,14 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+/**
+ * Firebase Base Website - Main Application
+ *
+ * Uses Firebase SDK from CDN (no bundler required):
+ * - Faster page loads via CDN caching
+ * - No build complexity
+ * - Vanilla JavaScript approach
+ *
+ * Firebase Version: 10.13.2 (latest stable v10.x)
+ */
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
 import { firebaseConfig, validateFirebaseConfig } from './firebase-config.js';
 import { AuthModule } from './modules/auth.js';
 import { UIModule } from './modules/ui.js';
