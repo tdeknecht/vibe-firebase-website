@@ -42,6 +42,9 @@ Before making any architectural or implementation decisions, reference the appro
 **For Version Control:**
 - `git-best-practices.md` - Git workflows, commit conventions, and branching strategies
 
+**For Maintenance:**
+- `prompt-maintenance.md` - Keeping prompt library current and accurate
+
 ## Decision Framework
 
 ### When to Reference Which Prompt
@@ -65,6 +68,8 @@ Before making any architectural or implementation decisions, reference the appro
 **Technology Selection** → `platform-simplification.md` + relevant technology-specific prompts
 
 **Version Control & Commits** → `git-best-practices.md`
+
+**Prompt Library Updates** → `prompt-maintenance.md`
 
 ## Core Working Principles
 
