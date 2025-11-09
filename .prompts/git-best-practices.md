@@ -108,8 +108,34 @@ fix(auth): update documentation
 <type>/<short-description>
 ```
 
+#### Branch Naming Rules
+
+Follow these conventions for consistent, readable branch names:
+
+- **Use lowercase only** - No uppercase letters (`feat/oauth`, not `feat/OAuth`)
+- **Use hyphens as separators** - Not underscores or spaces (`feat/google-oauth`, not `feat/google_oauth`)
+- **Keep descriptions concise** - Aim for 2-5 words, max 50 characters total
+- **Be descriptive** - Name should clearly indicate the purpose
+- **Use only alphanumeric and hyphens** - Avoid special characters except hyphens and forward slash
+- **No trailing slashes** - End with the description, not a slash
+
+```bash
+# ✅ Good: Follows all rules
+feat/add-user-dashboard
+fix/login-timeout-error
+docs/update-api-guide
+
+# ❌ Bad: Violates rules
+feat/Add-User-Dashboard      # Uppercase
+fix/login_timeout_error      # Underscores
+feat/really-long-branch-name-that-describes-everything-in-detail  # Too long
+docs/update                  # Too vague
+feat/new-feature!            # Special character
+```
+
 #### Branch Types
 
+**Primary Types:**
 - **feat/** - New features
 - **fix/** - Bug fixes
 - **docs/** - Documentation updates
@@ -118,6 +144,23 @@ fix(auth): update documentation
 - **chore/** - Maintenance tasks
 - **hotfix/** - Urgent production fixes
 - **release/** - Release preparation
+
+**Special Case Types:**
+- **experiment/** (or **spike/**) - Exploratory/proof-of-concept work
+- **deps/** - Dependency updates and package management
+- **perf/** - Performance improvements
+- **security/** - Security patches and improvements
+
+**Temporary Branches:**
+Temporary branches for testing or investigation should still follow the naming convention but be clearly identified and deleted promptly after use. Prefix with the appropriate type and use descriptive names:
+```bash
+# ✅ Acceptable temporary branches
+test/investigate-memory-leak
+experiment/alternative-auth-approach
+fix/debug-cors-issue
+
+# Remember to delete after investigation/testing is complete
+```
 
 #### Good Branch Names
 
@@ -139,6 +182,47 @@ hotfix/security-vulnerability-#123
 
 # ✅ Good: Release branch
 release/v1.2.0
+```
+
+#### Issue Number Integration
+
+For better traceability, include issue/ticket numbers in branch names when working on tracked tasks:
+
+**Recommended Format:**
+```
+<type>/<description>-#<issue-number>
+```
+
+**When to Include Issue Numbers:**
+- ✅ Bug fixes tracked in issue tracker
+- ✅ Features planned in issues/tickets
+- ✅ Hotfixes for reported problems
+- ✅ Work linked to project management tools
+
+**When Optional:**
+- Small documentation updates
+- Minor chores without associated issues
+- Exploratory/experimental work
+
+```bash
+# ✅ Good: With issue numbers
+feat/google-oauth-integration-#42
+fix/avatar-fallback-display-#58
+hotfix/security-vulnerability-#123
+refactor/auth-module-#89
+
+# ✅ Also acceptable: Without issue numbers (when appropriate)
+docs/update-readme
+chore/update-dependencies
+experiment/new-ui-approach
+
+# ✅ Good: Multiple issue references
+fix/auth-and-profile-bugs-#45-#46
+
+# ❌ Bad: Inconsistent formats
+feat/42-google-oauth          # Number at start
+fix/issue-58-avatar           # Word "issue" unnecessary
+hotfix/#123                   # No description
 ```
 
 #### Bad Branch Names
@@ -349,6 +433,52 @@ echo "✅ Pre-commit checks passed"
 exit 0
 ```
 
+### Pre-push Hook for Branch Name Validation
+
+Enforce branch naming conventions automatically:
+
+```bash
+#!/bin/bash
+# .git/hooks/pre-push
+
+# Get the current branch name
+current_branch=$(git symbolic-ref --short HEAD)
+
+# Define valid branch name pattern
+# Matches: <type>/<description> or <type>/<description>-#<number>
+branch_pattern="^(feat|fix|docs|refactor|test|chore|hotfix|release|experiment|spike|deps|perf|security)/[a-z0-9-]+(#[0-9]+)?$"
+
+# Skip validation for main/master branches
+if [[ "$current_branch" == "main" ]] || [[ "$current_branch" == "master" ]]; then
+  exit 0
+fi
+
+# Validate branch name
+if [[ ! $current_branch =~ $branch_pattern ]]; then
+  echo "❌ Invalid branch name: '$current_branch'"
+  echo ""
+  echo "Branch names must follow the pattern: <type>/<description>"
+  echo ""
+  echo "Valid types: feat, fix, docs, refactor, test, chore, hotfix, release,"
+  echo "             experiment, spike, deps, perf, security"
+  echo ""
+  echo "Examples:"
+  echo "  ✅ feat/google-oauth-integration"
+  echo "  ✅ fix/avatar-display-#58"
+  echo "  ✅ docs/update-readme"
+  echo ""
+  echo "Rules:"
+  echo "  - Use lowercase letters and numbers only"
+  echo "  - Use hyphens (-) to separate words"
+  echo "  - Optional issue number at end: -#123"
+  echo ""
+  exit 1
+fi
+
+echo "✅ Branch name validation passed: $current_branch"
+exit 0
+```
+
 ### Using Husky for Git Hooks
 
 ```bash
@@ -360,6 +490,9 @@ npx husky install
 
 # Add pre-commit hook
 npx husky add .husky/pre-commit "npm run lint && npm test"
+
+# Add pre-push hook for branch name validation
+npx husky add .husky/pre-push '.git/hooks/pre-push'
 ```
 
 ### Pre-commit Configuration
@@ -375,6 +508,7 @@ npx husky add .husky/pre-commit "npm run lint && npm test"
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint && npm test",
+      "pre-push": ".git/hooks/pre-push",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   }
