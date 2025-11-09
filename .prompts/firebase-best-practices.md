@@ -1,5 +1,9 @@
 # Firebase Best Practices Prompt
 
+> **Last Updated:** 2025-11-08
+> **Firebase SDK:** v10.13.2+ (Modular)
+> **Next Review:** 2026-02-08
+
 ## Firestore Database Design & Optimization
 
 When working with Firestore in this application, follow these well-architected patterns for optimal performance and cost efficiency. **For free tier optimization**, see `finops-free-tier-maximization.md` for aggressive caching and batching strategies.
